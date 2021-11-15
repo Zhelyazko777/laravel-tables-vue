@@ -23,4 +23,12 @@ export const initJqueryCode = () => {
       $slider.addClass('menu-shown');
       $('body').addClass('slider-overflow-hidden');
   }
+
+  window.showSliderLoading = (sliderId) => {
+      $(`#${sliderId}`).find('.loading-overlay').addClass('show');         
+  }
+
+  window.stopSliderLoading = (sliderId) => {
+    $(`#${sliderId}`).find('.loading-overlay').removeClass('show');
+  }
 };

@@ -6,9 +6,10 @@
                 <th class="padding"></th>
                 <th
                     v-for="column in columns"
+                    :key="column.name"
                     :class="getColumnClass(column)"
                     scope="col">
-                    {{column.uiColumnName}}
+                    {{column.uiName}}
                 </th>
                 <th scope="col" class="btn-th"></th>
             </tr>
@@ -19,20 +20,21 @@
                 </tr>
 
                 <template v-for="(row, index) in rows">
-                    <tr :class="checkIfRowSpecifiedInQueryString(row.id) ? 'marked' : ''">
+                    <tr :key="row.id" :class="checkIfRowSpecifiedInQueryString(row.id) ? 'marked' : ''">
                         <td></td>
                         <td v-for="(column) in columns"
+                            :key="column.name"
                             :class="getColumnClass(column)"
                             class="align-middle">
-                            <template v-if="column.isPhone && row[column.uiColumnName] && checkIfValueClickable(index, column)">
+                            <template v-if="column.isPhone && row[column.name] && checkIfValueClickable(index, column)">
                                 <div class="table-cell-container">
                                     <div class="text-truncate"
                                          :class="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column) ? 'has-tooltip-icon' : ''"
                                     >
-                                        <a :href="`tel:${row[column.uiColumnName]}`"
+                                        <a :href="`tel:${row[column.name]}`"
                                            :title="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon ? column.tooltip : ''"
                                            :data-toggle="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon ? 'tooltip' : ''">
-                                            {{row[column.uiColumnName]}}
+                                            {{row[column.name]}}
                                         </a>
                                     </div>
                                     <div v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)" class="tooltip-container">
@@ -43,7 +45,7 @@
                                     </div>
                                 </div>
                             </template>
-                            <template v-else-if="column.route && row[column.uiColumnName] && checkIfValueClickable(index, column)">
+                            <template v-else-if="column.route && row[column.name] && checkIfValueClickable(index, column)">
                                 <div class="table-cell-container">
                                     <div class="text-truncate"
                                          :class="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column) ? 'has-tooltip-icon' : ''"
@@ -53,7 +55,7 @@
                                             :data-toggle="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon  ? 'tooltip' : ''"
                                             target="_blank"
                                         >
-                                            {{row[column.uiColumnName]}}
+                                            {{row[column.name]}}
                                         </a>
                                     </div>
                                     <div v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)" class="tooltip-container">
@@ -69,7 +71,7 @@
                                     <div class="text-truncate"
                                          :class="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column) ? 'has-tooltip-icon' : ''"
                                     >
-                                        <span v-html="getCellValue(row[column.uiColumnName])"
+                                        <span v-html="getCellValue(row[column.name])"
                                               :title="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon  ? column.tooltip : ''"
                                               :data-toggle="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon  ? 'tooltip' : ''">
                                         </span>
@@ -83,48 +85,68 @@
                                 </div>
                             </template>
                         </td>
-                        <td @click="onButtonsMenuContainerClick($event, row.id)" class="text-center align-middle  d-flex justify-content-center align-items-center btn-td">
-                            <div class="mobile-action-buttons dropleft">
+                        <td @click="onButtonsMenuContainerClick($event, row.id)" class="text-center btn-td">
+                            <div class="content-wrapper">
+                              <div class="mobile-action-buttons dropleft">
+                                  <i :id="'expand-menu-button-' + row.id"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false"
+                                    class="fa fa-ellipsis-v">
+                                  </i>
 
-                                <i :id="'expand-menu-button-' + row.id"
-                                   data-toggle="dropdown"
-                                   aria-haspopup="true"
-                                   aria-expanded="false"
-                                   class="fa fa-ellipsis-v">
-                                </i>
-
-                                <div class="dropdown-menu" :aria-labelledby="'expand-menu-button-' + row.id">
-                                    <button
-                                        v-if="isExpandable"
-                                        :data-slider-menu="'expand-slider-' + row.id"
-                                        class="dd-item">
-                                        {{ translations.tableExpandButton }}
-                                    </button>
-                                    <template
-                                        v-for="button in actionButtons">
-                                        <a v-if="button.type === 'link'"
-                                           :class="getCorrectButtonClass(index, button)"
-                                           :href="button.route | replaceLinkId(row)"
-                                           class="dd-item">
-                                            {{ button.text }}
-                                        </a>
-
-                                        <button
-                                            v-else-if="button.type === 'modal'"
+                                  <div class="dropdown-menu" :aria-labelledby="'expand-menu-button-' + row.id">
+                                      <button
+                                          v-if="isExpandable"
+                                          :data-slider-menu="'expand-slider-' + row.id"
+                                          class="dd-item">
+                                          {{ translations.tableExpandButton }}
+                                      </button>
+                                      <template v-for="button in actionButtons">
+                                          
+                                          <span v-if="button.type === 'text'"
+                                            v-on="buildTableButtonSubscriptions(button.subscriptions, row, columns)"
+                                            v-bind="button.attrs"
+                                            :key="button.name"
                                             :class="getCorrectButtonClass(index, button)"
-                                            :data-target="`#${button.modalId}-${row.id}`"
-                                            data-toggle="modal"
                                             class="dd-item">
-                                            {{ button.text }}
-                                        </button>
+                                              {{ button.text }}
+                                          </span>
+                                          
+                                          <a v-if="button.type === 'link'"
+                                            v-on="buildTableButtonSubscriptions(button.subscriptions, row, columns)"
+                                            v-bind="button.attrs"
+                                            :key="button.name"
+                                            :class="getCorrectButtonClass(index, button)"
+                                            :href="button.route | replaceLinkId(row)"
+                                            class="dd-item">
+                                              {{ button.text }}
+                                          </a>
 
-                                    </template>
-                                </div>
+                                          <button
+                                              v-else-if="button.type === 'modal'"
+                                              v-on="buildTableButtonSubscriptions(button.subscriptions, row)"
+                                              v-bind="button.attrs"
+                                              :key="button.name"
+                                              :class="getCorrectButtonClass(index, button)"
+                                              :data-target="`#${button.modalId}-${row.id}`"
+                                              data-toggle="modal"
+                                              class="dd-item">
+                                              {{ button.text }}
+                                          </button>
+
+                                      </template>
+                                  </div>
+                              </div>
                             </div>
+                            
                         </td>
                     </tr>
 
-                    <div class="slider-menu" :id="'expand-slider-' + row.id">
+                    <div class="slider-menu" :id="'expand-slider-' + row.id" :key="'expand-slider-' + row.id">
+                        <div class="loading-overlay">
+                          <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                        </div>
                         <div class="slide-menu-header-container">
                             <div class="bold menu-title">
                                 {{translations.tableDetailsDefaultTitle}}
@@ -134,14 +156,14 @@
                             </div>
                         </div>
                         <div class="data-container ps">
-                            <div v-for="(column) in columns" class="slider-row">
-                                <p class="title">{{column.uiColumnName}}</p>
-                                <template v-if="column.isPhone && row[column.uiColumnName] && checkIfValueClickable(index, column)">
-                                    <a :href="`tel:${row[column.uiColumnName]}`"
+                            <div v-for="(column) in columns" class="slider-row" :key="column.name">
+                                <p class="title">{{column.uiName}}</p>
+                                <template v-if="column.isPhone && row[column.name] && checkIfValueClickable(index, column)">
+                                    <a :href="`tel:${row[column.name]}`"
                                        :title="column.tooltip && checkShouldShowTooltip(index, column) ? column.tooltip : ''"
                                        :data-toggle="column.tooltip && checkShouldShowTooltip(index, column) ? 'tooltip' : ''"
                                        class="text">
-                                        {{row[column.uiColumnName]}}
+                                        {{row[column.name]}}
                                     </a>
                                     <i v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)"
                                        data-toggle="tooltip"
@@ -149,14 +171,14 @@
                                        class="fa fa-question-circle ml-3">
                                     </i>
                                 </template>
-                                <template v-else-if="column.route && row[column.uiColumnName] && checkIfValueClickable(index, column)">
+                                <template v-else-if="column.route && row[column.name] && checkIfValueClickable(index, column)">
                                     <a  :href="column.route | replaceLinkId(row)"
                                         :title="column.tooltip && checkShouldShowTooltip(index, column) ? column.tooltip : ''"
                                         :data-toggle="column.tooltip && checkShouldShowTooltip(index, column) ? 'tooltip' : ''"
                                         target="_blank"
                                         class="text"
                                     >
-                                        {{row[column.uiColumnName]}}
+                                        {{row[column.name]}}
                                     </a>
                                     <i v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)"
                                        data-toggle="tooltip"
@@ -165,7 +187,7 @@
                                     </i>
                                 </template>
                                 <template v-else>
-                                    <span v-html="getCellValue(row[column.uiColumnName])"
+                                    <span v-html="getCellValue(row[column.name])"
                                           :title="column.tooltip && checkShouldShowTooltip(index, column) ? column.tooltip : ''"
                                           :data-toggle="column.tooltip && checkShouldShowTooltip(index, column) ? 'tooltip' : ''"
                                           class="text">
@@ -180,7 +202,7 @@
                         </div>
                     </div>
 
-                    <div v-for="button in actionButtons">
+                    <div v-for="button in actionButtons" :key="button.modalId + '-' + row.id">
                         <div v-if="button.type === 'modal'" class="modal fade" :id="button.modalId + '-' + row.id" role="dialog">
                             <div class="modal-dialog" :class="button.modalColor" role="document">
                                 <div class="modal-content">
@@ -215,6 +237,7 @@
 export default {
     data () {
         return {
+          csrf: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
           translations: this.$laravelFormsConfig.componentTranslations,
         };
     },
@@ -263,6 +286,24 @@ export default {
         },
     },
     methods: {
+        buildTableButtonSubscriptions (subscriptions, row, columns) {
+            const result = {};
+            const subscriptionsNames = Object.keys(subscriptions);
+            for (const subscriptionName of subscriptionsNames) {
+                result[subscriptionName] = (event) => {
+                  const columnsWithValues = columns.map(c => {
+                    return {
+                        name: c.column,
+                        value: row[c.column],
+                    };
+                  });
+                  columnsWithValues.push({ 'name': 'id', 'value': row.id});
+                  window[subscriptions[subscriptionName]](event, columnsWithValues);
+                } 
+            }
+
+            return result;
+        },
         checkIfRowSpecifiedInQueryString(rowId) {
             const itemId = new URLSearchParams(window.location.search).get('itemId');
             return itemId && itemId == rowId;
@@ -406,8 +447,8 @@ export default {
                     }
                 }
                 &.btn-th {
-                    padding-bottom: 3px;
-                    padding-top: 3px;
+                    // padding-bottom: 3px;
+                    // padding-top: 3px;
                     position: relative;
 
                     &:before {
@@ -455,22 +496,28 @@ export default {
                         text-align: center;
                     }
                     &.btn-td {
-                        padding-bottom: 3px;
-                        padding-top: 3px;
                         padding-left: 0;
                         padding-right: 0;
                         position: relative;
+                        cursor: pointer;
 
+                        .content-wrapper {
+                            width: 100%;
+                            height: 100%;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
 
-                        &:before {
-                            content: '';
-                            position: absolute;
-                            left: 0;
-                            border-left: 1px solid $black;
-                            height: 70%;
+                            &::before {
+                                content: '';
+                                position: absolute;
+                                left: 0;
+                                border-left: 1px solid $black;
+                                height: 70%;
 
-                            @include md {
-                                content: none;
+                                @include md {
+                                    content: none;
+                                }
                             }
                         }
                     }
