@@ -34,7 +34,7 @@
                                         <a :href="`tel:${row[column.name]}`"
                                            :title="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon ? column.tooltip : ''"
                                            :data-toggle="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon ? 'tooltip' : ''">
-                                            {{row[column.name]}}
+                                            {{column.prefix}}{{row[column.name]}}{{column.suffix}}
                                         </a>
                                     </div>
                                     <div v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)" class="tooltip-container">
@@ -55,7 +55,7 @@
                                             :data-toggle="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon  ? 'tooltip' : ''"
                                             target="_blank"
                                         >
-                                            {{row[column.name]}}
+                                            {{column.prefix}}{{row[column.name]}}{{column.suffix}}
                                         </a>
                                     </div>
                                     <div v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)" class="tooltip-container">
@@ -71,9 +71,9 @@
                                     <div class="text-truncate"
                                          :class="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column) ? 'has-tooltip-icon' : ''"
                                     >
-                                        <span v-html="getCellValue(row[column.name])"
-                                              :title="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon  ? column.tooltip : ''"
+                                        <span :title="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon  ? column.tooltip : ''"
                                               :data-toggle="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon  ? 'tooltip' : ''">
+                                              {{row[column.name] ? (column.prefix + row[column.name] + column.suffix) : '-' }}
                                         </span>
                                     </div>
                                     <div v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)" class="tooltip-container">
@@ -163,7 +163,7 @@
                                        :title="column.tooltip && checkShouldShowTooltip(index, column) ? column.tooltip : ''"
                                        :data-toggle="column.tooltip && checkShouldShowTooltip(index, column) ? 'tooltip' : ''"
                                        class="text">
-                                        {{row[column.name]}}
+                                        {{column.prefix}}{{row[column.name]}}{{column.suffix}}
                                     </a>
                                     <i v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)"
                                        data-toggle="tooltip"
@@ -178,7 +178,7 @@
                                         target="_blank"
                                         class="text"
                                     >
-                                        {{row[column.name]}}
+                                      {{column.prefix}}{{row[column.name]}}{{column.suffix}}
                                     </a>
                                     <i v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)"
                                        data-toggle="tooltip"
@@ -187,10 +187,10 @@
                                     </i>
                                 </template>
                                 <template v-else>
-                                    <span v-html="getCellValue(row[column.name])"
-                                          :title="column.tooltip && checkShouldShowTooltip(index, column) ? column.tooltip : ''"
+                                    <span :title="column.tooltip && checkShouldShowTooltip(index, column) ? column.tooltip : ''"
                                           :data-toggle="column.tooltip && checkShouldShowTooltip(index, column) ? 'tooltip' : ''"
                                           class="text">
+                                        {{row[column.name] ? (column.prefix + row[column.name] + column.suffix) : '-' }}
                                     </span>
                                     <i v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)"
                                        data-toggle="tooltip"
@@ -392,9 +392,6 @@ export default {
                 case '<=':
                     return firstOperand <= secondOperand;
             }
-        },
-        getCellValue (value) {
-            return value ?? '&mdash;';
         },
         getColumnClass(column) {
             let classes = [];
