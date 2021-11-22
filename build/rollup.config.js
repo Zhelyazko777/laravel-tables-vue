@@ -10,6 +10,7 @@ import babel from '@rollup/plugin-babel';
 import { terser } from 'rollup-plugin-terser';
 import minimist from 'minimist';
 import css from 'rollup-plugin-css-only';
+import copy from 'rollup-plugin-copy';
 
 // Get browserslist config and remove ie from es build targets
 const esbrowserslist = fs.readFileSync('./.browserslistrc')
@@ -43,6 +44,11 @@ const baseConfig = {
     },
     css: {
       output: 'default-styles.css'
+    },
+    copy: {
+      targets: [
+        { src: 'src/scss/default-styles.scss', dest: 'dist' },
+      ],
     },
     vue: {
       css: false,
@@ -103,6 +109,7 @@ if (!argv.format || argv.format === 'es') {
       replace(baseConfig.plugins.replace),
       ...baseConfig.plugins.preVue,
       css(baseConfig.plugins.css),
+      copy(baseConfig.plugins.copy),
       vue(baseConfig.plugins.vue),
       ...baseConfig.plugins.postVue,
       babel({
