@@ -234,6 +234,8 @@
 </template>
 
 <script>
+import { initJqueryCode } from './../jquery';
+
 export default {
     data () {
         return {
@@ -403,7 +405,10 @@ export default {
             }
 
             return classes.join(' ');
-        }
+        },
+        initSliders () {
+          initJqueryCode();
+        },
     }
 }
 </script>
