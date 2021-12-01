@@ -11,7 +11,7 @@ const install = function installLaravelFormsVue(Vue, options) {
   };
   Object.entries(components).forEach(([componentName, component]) => {
     Vue.component(componentName, component);
-  }); 
+  });
 };
 
 // Create module definition for Vue.use()
