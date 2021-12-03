@@ -1,17 +1,20 @@
 <template>
   <div class="content-wrapper">
     <div class="action-buttons dropleft">
-      <i 
+      <div
         :id="id"
         data-toggle="dropdown"
         aria-haspopup="true"
         aria-expanded="false"
-        class="fa fa-ellipsis-v"
-      ></i>
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 512">
+          <path d="M96 184c39.8 0 72 32.2 72 72s-32.2 72-72 72-72-32.2-72-72 32.2-72 72-72zM24 80c0 39.8 32.2 72 72 72s72-32.2 72-72S135.8 8 96 8 24 40.2 24 80zm0 352c0 39.8 32.2 72 72 72s72-32.2 72-72-32.2-72-72-72-72 32.2-72 72z"/>
+        </svg>
+      </div>
       <div class="dropdown-menu" :aria-labelledby="id">
         <button
           v-if="showExpandableBtn"
-          :data-slider-menu="generateExpandSliderId(row.id)"
+          @click="onExpandBtnClick"
           class="dd-item"
         >
           {{ expandableBtnText }}
@@ -94,6 +97,9 @@ export default {
   },
   mixins: [ ModalMixin, ExpandableSliderMixin ],
   methods: {
+    onExpandBtnClick () {
+      this.$emit('expand');
+    },
     buildTableButtonSubscriptions (subscriptions) {
         const result = {};
         const subscriptionsNames = Object.keys(subscriptions);
@@ -121,7 +127,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import './../scss/vue.scss';
   .content-wrapper {
     width: 100%;
     height: 100%;
@@ -144,6 +149,9 @@ export default {
       color: $default-text-color;
       cursor: pointer;
 
+      svg {
+        height: 1rem;
+      }
       .dropdown-menu {
         .dd-item {
           display: block;

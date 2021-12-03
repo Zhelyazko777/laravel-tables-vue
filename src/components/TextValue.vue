@@ -3,7 +3,9 @@
     :title="showTooltipOnHover  ? tooltip : ''"
     :data-toggle="showTooltipOnHover  ? 'tooltip' : ''"
   >
-    {{value ? (prefix + value + suffix) : '-' }}
+    <span class="prefix">{{prefix}}</span>
+    <span class="value">{{value}}</span>
+    <span class="suffix">{{suffix}}</span>
   </span>
 </template>
 
@@ -31,5 +33,22 @@ export default {
       type: Boolean|null,
     },
   },
+  computed: {
+    cellValue () {
+      let result = '-';
+
+      if (this.value) {
+        result = this.value;
+      }
+      if (this.prefix) {
+        result = this.prefix + result;
+      }
+      if (this.suffix) {
+        result = result + this.suffix;
+      }
+
+      return result;
+    }
+  }
 }
 </script>

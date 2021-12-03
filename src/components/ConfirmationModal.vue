@@ -26,12 +26,9 @@
 </template>
 
 <script>
+import CsrfMixin from './../mixins/csrf.mixin.js';
+
 export default {
-  data () {
-    return {
-      csrf: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
-    };
-  },
   props: {
     id: {
       required: true,
@@ -57,7 +54,8 @@ export default {
       required: true,
       type: String,
     },
-  }  
+  },
+  mixins: [ CsrfMixin, ]
 }
 </script>
 

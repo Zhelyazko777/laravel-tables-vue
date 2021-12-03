@@ -1,12 +1,11 @@
 import { mount } from '@vue/test-utils'
-import LinkValue from './../../src/components/LinkValue.vue';
+import PhoneValue from './../../src/components/PhoneValue.vue';
 
-describe('LinkValue.vue Test', () => {
+describe('PhoneValue.vue Test', () => {
   it('Should render corrrect value and empty suffix and preffix', () => {
-    const wrapper = mount(LinkValue, {
+    const wrapper = mount(PhoneValue, {
       propsData: {
         value: 'test value',
-        route: null,
         prefix: null,
         suffix: null,
         tooltip: null,
@@ -18,10 +17,9 @@ describe('LinkValue.vue Test', () => {
   });
 
   it('Should render corrrect value and prefix if passed and no suffix', () => {
-    const wrapper = mount(LinkValue, {
+    const wrapper = mount(PhoneValue, {
       propsData: {
         value: 'test value',
-        route: null,
         prefix: 'prefix',
         suffix: null,
         tooltip: null,
@@ -33,10 +31,9 @@ describe('LinkValue.vue Test', () => {
   });
 
   it('Should render corrrect value, suffix and prefix if passed', () => {
-    const wrapper = mount(LinkValue, {
+    const wrapper = mount(PhoneValue, {
       propsData: {
         value: 'test value',
-        route: null,
         prefix: 'prefix',
         suffix: 'suffix',
         tooltip: null,
@@ -47,11 +44,10 @@ describe('LinkValue.vue Test', () => {
     expect(wrapper).toMatchSnapshot();        
   });
 
-  it('Should render corrrect href', () => {
-    const wrapper = mount(LinkValue, {
+  it('Should render corrrect tel:', () => {
+    const wrapper = mount(PhoneValue, {
       propsData: {
-        value: null,
-        route: 'route',
+        value: '+359887878966',
         prefix: null,
         suffix: null,
         tooltip: null,
@@ -63,10 +59,9 @@ describe('LinkValue.vue Test', () => {
   });
 
   it('Should render correct tooltip if passed and showTooltipOnHover is true', () => {
-    const wrapper = mount(LinkValue, {
+    const wrapper = mount(PhoneValue, {
       propsData: {
         value: null,
-        route: null,
         prefix: null,
         suffix: null,
         tooltip: 'Some tooltip',
@@ -78,10 +73,9 @@ describe('LinkValue.vue Test', () => {
   });
 
   it('Should not render correct tooltip if passed and showTooltipOnHover is false', () => {
-    const wrapper = mount(LinkValue, {
+    const wrapper = mount(PhoneValue, {
       propsData: {
         value: null,
-        route: null,
         prefix: null,
         suffix: null,
         tooltip: 'Some tooltip',

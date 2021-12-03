@@ -53,6 +53,7 @@ const baseConfig = {
         preprocessOptions: {
           scss: {
             includePaths: ['./../src/scss'],
+            data: '@import "./../scss/vue.scss";',  
           }
         }
       }

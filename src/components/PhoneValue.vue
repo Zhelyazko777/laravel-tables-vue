@@ -4,7 +4,9 @@
     :title="showTooltipOnHover ? tooltip : ''"
     :data-toggle="showTooltipOnHover ? 'tooltip' : ''"
   >
-      {{prefix}}{{value}}{{suffix}}
+      <span class="prefix">{{prefix}}</span>
+      <span class="value">{{value}}</span>
+      <span class="suffix">{{suffix}}</span>
   </a>
 </template>
 
