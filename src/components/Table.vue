@@ -1,410 +1,198 @@
 <template>
-    <div>
-        <table class="table abstract-table">
-            <thead>
-            <tr>
-                <th class="padding"></th>
-                <th
-                    v-for="column in columns"
-                    :key="column.name"
-                    :class="getColumnClass(column)"
-                    scope="col">
-                    {{column.uiName}}
-                </th>
-                <th scope="col" class="btn-th"></th>
+  <div>
+    <table class="table abstract-table">
+      <thead>
+        <tr>
+          <th class="padding"></th>
+          <th
+            v-for="column in columns"
+            :key="column.name"
+            :class="getColumnClass(column)"
+            scope="col"
+          >
+            {{column.uiName}}
+          </th>
+          <th scope="col" class="btn-th"></th>
+        </tr>
+      </thead>
+        <tbody>
+
+          <tr v-if="rows.length == 0">
+            <td class="no-items-text">{{ noItemsText }}</td>
+          </tr>
+
+          <template v-for="(row, index) in rows">
+            <tr :key="row.id" :class="checkIfRowSpecifiedInQueryString(row.id) ? 'marked' : ''">
+              <td></td>
+              <td 
+                v-for="(column) in columns"
+                :key="column.name"
+                :class="getColumnClass(column)"
+                class="align-middle"
+              >
+                <div class="table-cell-container">
+                  <div 
+                    class="text-truncate"
+                    :class="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column) ? 'has-tooltip-icon' : ''"
+                  >
+                    <phone-value
+                      v-if="column.isPhone && row[column.name] && checkIfValueClickable(index, column)"
+                      :value="row[column.name]"
+                      :prefix="column.prefix"
+                      :suffix="column.suffix"
+                      :tooltip="column.tooltip"
+                      :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon"
+                    />
+                    <link-value
+                      v-else-if="column.route && row[column.name] && checkIfValueClickable(index, column)"
+                      :value="row[column.name]"
+                      :route="column.route | replaceLinkId(row)"
+                      :prefix="column.prefix"
+                      :suffix="column.suffix"
+                      :tooltip="column.tooltip"
+                      :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon"
+                    />
+                    <text-value
+                      v-else
+                      :value="row[column.name]"
+                      :prefix="column.prefix"
+                      :suffix="column.suffix"
+                      :tooltip="column.tooltip"
+                      :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon"
+                    />
+                  </div>
+                  <div
+                    v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)"
+                    :title="column.tooltip"
+                    data-toggle="tooltip"
+                    class="ml-3 row-tooltip"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                      <path d="M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8 256 8s248 111.083 248 248zM262.655 90c-54.497 0-89.255 22.957-116.549 63.758-3.536 5.286-2.353 12.415 2.715 16.258l34.699 26.31c5.205 3.947 12.621 3.008 16.665-2.122 17.864-22.658 30.113-35.797 57.303-35.797 20.429 0 45.698 13.148 45.698 32.958 0 14.976-12.363 22.667-32.534 33.976C247.128 238.528 216 254.941 216 296v4c0 6.627 5.373 12 12 12h56c6.627 0 12-5.373 12-12v-1.333c0-28.462 83.186-29.647 83.186-106.667 0-58.002-60.165-102-116.531-102zM256 338c-25.365 0-46 20.635-46 46 0 25.364 20.635 46 46 46s46-20.636 46-46c0-25.365-20.635-46-46-46z"/>
+                    </svg>
+                  </div>
+                </div>
+              </td>
+              <td @click="onButtonsMenuContainerClick($event, row.id)" class="text-center btn-td">
+                <action-buttons
+                  :id="'expand-menu-button-' + row.id"
+                  :showExpandableBtn="isExpandable"
+                  :expandableBtnText="translations.tableExpandButton"
+                  :buttons="actionButtons"
+                  :row="row"
+                  :rowIndex="index"
+                  :columns="columns"
+                  @expand="onExpanedBtnClick(index)"
+                />
+              </td>
             </tr>
-            </thead>
-            <tbody>
-                <tr v-if="rows.length == 0">
-                    <td class="no-items-text">{{ noItemsText }}</td>
-                </tr>
 
-                <template v-for="(row, index) in rows">
-                    <tr :key="row.id" :class="checkIfRowSpecifiedInQueryString(row.id) ? 'marked' : ''">
-                        <td></td>
-                        <td v-for="(column) in columns"
-                            :key="column.name"
-                            :class="getColumnClass(column)"
-                            class="align-middle">
-                            <template v-if="column.isPhone && row[column.name] && checkIfValueClickable(index, column)">
-                                <div class="table-cell-container">
-                                    <div class="text-truncate"
-                                         :class="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column) ? 'has-tooltip-icon' : ''"
-                                    >
-                                        <a :href="`tel:${row[column.name]}`"
-                                           :title="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon ? column.tooltip : ''"
-                                           :data-toggle="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon ? 'tooltip' : ''">
-                                            {{column.prefix}}{{row[column.name]}}{{column.suffix}}
-                                        </a>
-                                    </div>
-                                    <div v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)" class="tooltip-container">
-                                        <i data-toggle="tooltip"
-                                           :title="column.tooltip"
-                                           class="fa fa-question-circle ml-3">
-                                        </i>
-                                    </div>
-                                </div>
-                            </template>
-                            <template v-else-if="column.route && row[column.name] && checkIfValueClickable(index, column)">
-                                <div class="table-cell-container">
-                                    <div class="text-truncate"
-                                         :class="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column) ? 'has-tooltip-icon' : ''"
-                                    >
-                                        <a  :href="column.route | replaceLinkId(row)"
-                                            :title="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon  ? column.tooltip : ''"
-                                            :data-toggle="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon  ? 'tooltip' : ''"
-                                            target="_blank"
-                                        >
-                                            {{column.prefix}}{{row[column.name]}}{{column.suffix}}
-                                        </a>
-                                    </div>
-                                    <div v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)" class="tooltip-container">
-                                        <i data-toggle="tooltip"
-                                           :title="column.tooltip"
-                                           class="fa fa-question-circle ml-3">
-                                        </i>
-                                    </div>
-                                </div>
-                            </template>
-                            <template v-else>
-                                <div class="table-cell-container">
-                                    <div class="text-truncate"
-                                         :class="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column) ? 'has-tooltip-icon' : ''"
-                                    >
-                                        <span :title="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon  ? column.tooltip : ''"
-                                              :data-toggle="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon  ? 'tooltip' : ''">
-                                              {{row[column.name] ? (column.prefix + row[column.name] + column.suffix) : '-' }}
-                                        </span>
-                                    </div>
-                                    <div v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)" class="tooltip-container">
-                                        <i data-toggle="tooltip"
-                                           :title="column.tooltip"
-                                           class="fa fa-question-circle ml-3">
-                                        </i>
-                                    </div>
-                                </div>
-                            </template>
-                        </td>
-                        <td @click="onButtonsMenuContainerClick($event, row.id)" class="text-center btn-td">
-                            <div class="content-wrapper">
-                              <div class="mobile-action-buttons dropleft">
-                                  <i :id="'expand-menu-button-' + row.id"
-                                    data-toggle="dropdown"
-                                    aria-haspopup="true"
-                                    aria-expanded="false"
-                                    class="fa fa-ellipsis-v">
-                                  </i>
+            <expandable-slider
+              :ref="`expandable-slider-${index}`"
+              :key="generateExpandSliderId(row.id)"
+              :id="generateExpandSliderId(row.id)"
+              :title="translations.tableDetailsDefaultTitle"
+              :row="row"
+              :columns="columns"
+            />
+            
+            <div v-for="button in actionButtons" :key="generateModalId(row.id, button.modalId)">
+              <confirmation-modal 
+                v-if="button.type === 'modal'" 
+                :id="generateModalId(row.id, button.modalId)"
+                :heading="button.modalHeadingText"
+                :body="button.modalBodyText"
+                :actionRoute="button.modalActionRoute | replaceLinkId(row)"
+                :cancelBtnText="button.modalCancelText"
+                :submitBtnText="button.modalSubmitText"
+              />
+            </div>
+          </template>
 
-                                  <div class="dropdown-menu" :aria-labelledby="'expand-menu-button-' + row.id">
-                                      <button
-                                          v-if="isExpandable"
-                                          :data-slider-menu="'expand-slider-' + row.id"
-                                          class="dd-item">
-                                          {{ translations.tableExpandButton }}
-                                      </button>
-                                      <template v-for="button in actionButtons">
-                                          
-                                          <span v-if="button.type === 'text'"
-                                            v-on="buildTableButtonSubscriptions(button.subscriptions, row, columns)"
-                                            v-bind="button.attrs"
-                                            :key="button.name"
-                                            :class="getCorrectButtonClass(index, button)"
-                                            class="dd-item">
-                                              {{ button.text }}
-                                          </span>
-                                          
-                                          <a v-if="button.type === 'link'"
-                                            v-on="buildTableButtonSubscriptions(button.subscriptions, row, columns)"
-                                            v-bind="button.attrs"
-                                            :key="button.name"
-                                            :class="getCorrectButtonClass(index, button)"
-                                            :href="button.route | replaceLinkId(row)"
-                                            class="dd-item">
-                                              {{ button.text }}
-                                          </a>
-
-                                          <button
-                                              v-else-if="button.type === 'modal'"
-                                              v-on="buildTableButtonSubscriptions(button.subscriptions, row)"
-                                              v-bind="button.attrs"
-                                              :key="button.name"
-                                              :class="getCorrectButtonClass(index, button)"
-                                              :data-target="`#${button.modalId}-${row.id}`"
-                                              data-toggle="modal"
-                                              class="dd-item">
-                                              {{ button.text }}
-                                          </button>
-
-                                      </template>
-                                  </div>
-                              </div>
-                            </div>
-                            
-                        </td>
-                    </tr>
-
-                    <div class="slider-menu" :id="'expand-slider-' + row.id" :key="'expand-slider-' + row.id">
-                        <div class="loading-overlay">
-                          <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
-                        </div>
-                        <div class="slide-menu-header-container">
-                            <div class="bold menu-title">
-                                {{translations.tableDetailsDefaultTitle}}
-                            </div>
-                            <div class="">
-                                <i class="fa fa-times" :data-slider-menu-to-close="'expand-slider-' + row.id"></i>
-                            </div>
-                        </div>
-                        <div class="data-container ps">
-                            <div v-for="(column) in columns" class="slider-row" :key="column.name">
-                                <p class="title">{{column.uiName}}</p>
-                                <template v-if="column.isPhone && row[column.name] && checkIfValueClickable(index, column)">
-                                    <a :href="`tel:${row[column.name]}`"
-                                       :title="column.tooltip && checkShouldShowTooltip(index, column) ? column.tooltip : ''"
-                                       :data-toggle="column.tooltip && checkShouldShowTooltip(index, column) ? 'tooltip' : ''"
-                                       class="text">
-                                        {{column.prefix}}{{row[column.name]}}{{column.suffix}}
-                                    </a>
-                                    <i v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)"
-                                       data-toggle="tooltip"
-                                       :title="column.tooltip"
-                                       class="fa fa-question-circle ml-3">
-                                    </i>
-                                </template>
-                                <template v-else-if="column.route && row[column.name] && checkIfValueClickable(index, column)">
-                                    <a  :href="column.route | replaceLinkId(row)"
-                                        :title="column.tooltip && checkShouldShowTooltip(index, column) ? column.tooltip : ''"
-                                        :data-toggle="column.tooltip && checkShouldShowTooltip(index, column) ? 'tooltip' : ''"
-                                        target="_blank"
-                                        class="text"
-                                    >
-                                      {{column.prefix}}{{row[column.name]}}{{column.suffix}}
-                                    </a>
-                                    <i v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)"
-                                       data-toggle="tooltip"
-                                       :title="column.tooltip"
-                                       class="fa fa-question-circle ml-3">
-                                    </i>
-                                </template>
-                                <template v-else>
-                                    <span :title="column.tooltip && checkShouldShowTooltip(index, column) ? column.tooltip : ''"
-                                          :data-toggle="column.tooltip && checkShouldShowTooltip(index, column) ? 'tooltip' : ''"
-                                          class="text">
-                                        {{row[column.name] ? (column.prefix + row[column.name] + column.suffix) : '-' }}
-                                    </span>
-                                    <i v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)"
-                                       data-toggle="tooltip"
-                                       :title="column.tooltip"
-                                       class="fa fa-question-circle ml-3">
-                                    </i>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div v-for="button in actionButtons" :key="button.modalId + '-' + row.id">
-                        <div v-if="button.type === 'modal'" class="modal fade" :id="button.modalId + '-' + row.id" role="dialog">
-                            <div class="modal-dialog" :class="button.modalColor" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel">{{ button.modalHeadingText }}</h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body" v-html="button.modalBodyText"></div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-link" data-dismiss="modal">{{ button.modalCancelText }}</button>
-                                        <form :action="button.modalActionRoute | replaceLinkId(row)" method="post">
-                                            <input type="hidden" name="_token" :value="csrf">
-                                            <button type="submit" class="btn btn-primary">
-                                                {{ button.modalSubmitText }}
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </template>
-            </tbody>
-        </table>
-    </div>
+        </tbody>
+    </table>
+  </div>
 </template>
 
 <script>
 import { initJqueryCode } from './../jquery';
+import PresentableMixin from './../mixins/presentable.mixin.js';
+import ExpandableSliderMixin from './../mixins/expandable-slider.mixin.js';
+import ModalMixin from './../mixins/modal.mixin.js';
+import CsrfMixin from './../mixins/csrf.mixin.js';
 
 export default {
     data () {
-        return {
-          csrf: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
-          translations: this.$laravelFormsConfig.componentTranslations,
-        };
+      return {
+        translations: this.$laravelFormsConfig.componentTranslations,
+      };
     },
     props: {
-        columns: {
-            type: Array,
-            required: true,
-        },
-        rows: {
-            type: Array,
-            required: true,
-        },
-        actionButtons: {
-            type: Array,
-            required: true,
-        },
-        noItemsText: {
-            type: String,
-            required: true,
-        },
-        isExpandable: {
-            type: Boolean,
-            required: true,
-        },
-        sliderTitle: {
-            type: String,
-        }
+      columns: {
+        type: Array,
+        required: true,
+      },
+      rows: {
+        type: Array,
+        required: true,
+      },
+      actionButtons: {
+        type: Array,
+        required: true,
+      },
+      noItemsText: {
+        type: String,
+        required: true,
+      },
+      isExpandable: {
+        type: Boolean,
+        required: true,
+      },
+      sliderTitle: {
+        type: String,
+      }
     },
-    filters: {
-        replaceLinkId (link, row) {
-            const regex = `${encodeURI('[')}.+\\${encodeURI(']')}`;
-            const match = link.match(RegExp(regex));
-            if (match && match.length > 0) {
-              const itemsToReplace = match[0].split('/');
-              for (const item of itemsToReplace) {
-                  const trimmedItem = item.replace(encodeURI('['), '').replace(encodeURI(']'), '');
-                  if (trimmedItem === 'itemId') {
-                      link = link.replace(encodeURI('[itemId]'), row.id);
-                  } else {
-                      link = link.replace(encodeURI(`[${trimmedItem}]`), row[trimmedItem]);
-                  }
-              }
-            }
-
-            return link;
-        },
-    },
+    mixins: [
+      CsrfMixin,
+      ExpandableSliderMixin,
+      PresentableMixin, 
+      ModalMixin, 
+    ],
     methods: {
-        buildTableButtonSubscriptions (subscriptions, row, columns) {
-            const result = {};
-            const subscriptionsNames = Object.keys(subscriptions);
-            for (const subscriptionName of subscriptionsNames) {
-                result[subscriptionName] = (event) => {
-                  const columnsWithValues = columns.map(c => {
-                    return {
-                        name: c.column,
-                        value: row[c.column],
-                    };
-                  });
-                  columnsWithValues.push({ 'name': 'id', 'value': row.id});
-                  window[subscriptions[subscriptionName]](event, columnsWithValues);
-                } 
-            }
-
-            return result;
-        },
-        checkIfRowSpecifiedInQueryString(rowId) {
-            const itemId = new URLSearchParams(window.location.search).get('itemId');
-            return itemId && itemId == rowId;
+      onExpanedBtnClick (index) {
+        this.$refs[`expandable-slider-${index}`][0].open();
+      },
+        checkIfRowSpecifiedInQueryString (rowId) {
+          const itemId = new URLSearchParams(window.location.search).get('itemId');
+          return itemId && itemId == rowId;
         },
         onButtonsMenuContainerClick ($event, rowId) {
             if (!$event.target.classList.contains('dd-item')) {
-                setTimeout(() => {
-                    $(`#expand-menu-button-${rowId}`).click();
-                })
+              setTimeout(() => {
+                $(`#expand-menu-button-${rowId}`).click();
+              })
             }
-
         },
-        getCorrectButtonClass (rowIndex, button) {
-            return (Object.keys(button.disableConditions).length > 0 &&
-                    this.executeRawDataConditions(
-                            rowIndex,
-                            button.disableConditions
-                    )) ? 'disabled' : '';
-        },
-        checkShouldShowTooltip(rowIndex, column) {
+        checkShouldShowTooltip (rowIndex, column) {
             if (Object.keys(column.removeTooltipConditions).length === 0) {
-                return true;
+              return true;
             }
 
             return this.executeRawDataConditions(
                     rowIndex,
                     column.removeTooltipConditions
-                );
+                  );
         },
-        checkIfValueClickable (rowIndex, column) {
-            if (Object.keys(column.clickableConditions).length === 0) {
-                return true;
-            }
+        getColumnClass (column) {
+          let classes = [];
+          if (column.isHiddenOnMobile) {
+            classes.push('hide-on-mobile');
+          }
+          if (column.isHiddenOnDesktop) {
+            classes.push('hide-on-desktop');
+          }
 
-            return this.executeRawDataConditions(
-                    rowIndex,
-                    column.clickableConditions
-                );
-        },
-        executeRawDataConditions (rawIndex, conditionTypes) {
-            const andResults = [];
-            const orResults = [];
-            for (const conditionType in conditionTypes) {
-                for (const condition of conditionTypes[conditionType]) {
-                    const firstOperand = this.rows[rawIndex][condition[0]];
-                    const operator = condition[1];
-                    const secondOperand = condition[2];
-
-                    if (conditionType === 'or') {
-                        orResults.push(
-                            this.conditionExecute(
-                                firstOperand,
-                                operator,
-                                secondOperand,
-                            )
-                        );
-                    } else if (conditionType === 'and') {
-                        andResults.push(
-                            this.conditionExecute(
-                                firstOperand,
-                                operator,
-                                secondOperand,
-                            )
-                        );
-                    }
-                }
-            }
-
-            if (andResults.length !== 0) {
-                return andResults.every(x => x === true);
-            } else if (orResults.length !== 0) {
-                return orResults.some(x => x === true);
-            }
-
-            console.warn('Single conditions only supported, add mixed conditions support in Table component');
-            return false;
-        },
-        conditionExecute(firstOperand, operator, secondOperand) {
-            switch (operator) {
-                case '==':
-                    return firstOperand === secondOperand;
-                case '!=':
-                    return firstOperand !== secondOperand;
-                case '>=':
-                    return firstOperand >= secondOperand;
-                case '<=':
-                    return firstOperand <= secondOperand;
-            }
-        },
-        getColumnClass(column) {
-            let classes = [];
-            if (column.isHiddenOnMobile) {
-                classes.push('hide-on-mobile');
-            }
-            if (column.isHiddenOnDesktop) {
-                classes.push('hide-on-desktop');
-            }
-
-            return classes.join(' ');
+          return classes.join(' ');
         },
         initSliders () {
           initJqueryCode();
@@ -414,321 +202,123 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-    @import './../scss/vue.scss';
-    
     table {
-        table-layout: fixed;
-        position: relative;
+      table-layout: fixed;
+      position: relative;
 
-        thead {
-            th {
-                background-color: #EDEDED;
-                border: none;
-                height: 45px;
-                padding-left: 0!important;
+      thead {
+        th {
+          background-color: #EDEDED;
+          border: none;
+          height: 45px;
+          padding-left: 0!important;
 
-                @include md {
-                    font-size: $mobile-font-size;
-                }
-                &:first-of-type {
-                    width: $profile-table-left-right-padding!important;
+          @include md {
+            font-size: $mobile-font-size;
+          }
+          &:first-of-type {
+            width: $profile-table-left-right-padding!important;
 
-                    @include md {
-                        width: 20px!important;
-                    }
-                }
-                &:last-of-type {
-                    width: $profile-table-left-right-padding;
-                }
-                &.hide-on-desktop {
-                    display: none;
-                }
-                &.hide-on-mobile {
-                    @include md {
-                        display: none;
-                    }
-                }
-                &.btn-th {
-                    // padding-bottom: 3px;
-                    // padding-top: 3px;
-                    position: relative;
-
-                    &:before {
-                        content: '';
-                        position: absolute;
-                        left: 0;
-                        border-left: 1px solid $black;
-                        height: 70%;
-                        top: 50%;
-                        transform: translateY(-50%);
-
-                        @include md {
-                            content: none;
-                        }
-                    }
-                }
+            @include md {
+              width: 20px!important;
             }
+          }
+          &:last-of-type {
+            width: $profile-table-left-right-padding;
+          }
+          &.hide-on-desktop {
+            display: none;
+          }
+          &.hide-on-mobile {
+            @include md {
+              display: none;
+            }
+          }
+          &.btn-th {
+            position: relative;
+
+            &:before {
+              content: '';
+              position: absolute;
+              left: 0;
+              border-left: 1px solid $black;
+              height: 70%;
+              top: 50%;
+              transform: translateY(-50%);
+
+              @include md {
+                content: none;
+              }
+            }
+          }
         }
-        tbody {
-            tr {
+      }
+      tbody {
+        tr {
+          &.marked {
+            background-color: #68cb2b2e;
+          }
+          td {
+            border-left: none;
+            border-right: none;
+            height: 45px;
+            padding-left: 0!important;
 
-                &.marked {
-                    background-color: #68cb2b2e;
-                }
-                td {
-                    border-left: none;
-                    border-right: none;
-                    height: 45px;
-                    padding-left: 0!important;
-
-                    @include md {
-                        font-size: $mobile-font-size;
-                    }
-                    &:not(td:last-of-type) {
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                    }
-                    &.no-items-text {
-                        border-top: none;
-                        padding-left: 0;
-                        width: 100%;
-                        margin-top: 1em;
-                        position: absolute;
-                        text-align: center;
-                    }
-                    &.btn-td {
-                        padding-left: 0;
-                        padding-right: 0;
-                        position: relative;
-                        cursor: pointer;
-
-                        .content-wrapper {
-                            width: 100%;
-                            height: 100%;
-                            display: flex;
-                            justify-content: center;
-                            align-items: center;
-
-                            &::before {
-                                content: '';
-                                position: absolute;
-                                left: 0;
-                                border-left: 1px solid $black;
-                                height: 70%;
-
-                                @include md {
-                                    content: none;
-                                }
-                            }
-                        }
-                    }
-                    &.hide-on-desktop {
-                        display: none;
-                    }
-                    &.hide-on-mobile {
-                        @include md {
-                            display: none;
-                        }
-                    }
-                    .table-cell-container {
-                        display: flex;
-
-                        .text-truncate.has-tooltip-icon {
-                            max-width: calc(80% - 1rem);
-                        }
-                        .tooltip-container {
-                            display: inline-block;
-                            max-width: 10%;
-                        }
-                        a {
-                            text-decoration: underline;
-                            color: $black;
-                        }
-                    }
-
-                    .mobile-action-buttons {
-                        color: $default-text-color;
-                        cursor: pointer;
-
-                        .dropdown-menu {
-                            .dd-item {
-                                display: block;
-                                padding: .2em 1em;
-                                width: 100%;
-                                border-bottom: 1px solid $grey;
-
-                                &:last-child {
-                                    border-bottom: 0;
-                                }
-                                &:hover {
-                                    background-color: $grey;
-                                }
-                                &.disabled {
-                                    pointer-events: none;
-                                    cursor: default;
-                                    text-decoration: none;
-                                    color: $grey-darker;
-
-                                    &:hover {
-                                        background-color: $white;
-                                    }
-                                }
-                            }
-                        }
-                        a {
-                            color: $default-text-color;
-                            user-select: none;
-                            text-decoration: none;
-
-                            &:hover {
-                                text-decoration: none;
-                            }
-                        }
-                        button:not(.btn) {
-                            color: $default-text-color;
-                            background-color: transparent;
-                            border: none;
-                            padding: 0;
-                            text-align: left;
-                        }
-                    }
-                }
+            @include md {
+              font-size: $mobile-font-size;
             }
-            .slider-menu {
-                .data-container {
-                    text-align: left;
-                    padding: 15px;
-
-                    .slider-row {
-                        margin-bottom: 1em;
-
-                        @include md {
-                            font-size: 1.2em;
-                        }
-                        a {
-                            text-decoration: underline;
-                            color: $black;
-                        }
-                        .title {
-                            font-weight: 500!important;
-                            margin-bottom: .4em;
-                        }
-                        .text {
-                            font-size: .9em;
-                            margin-bottom: 0;
-                        }
-                    }
-                }
+            &:not(td:last-of-type) {
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
             }
+            &.no-items-text {
+              border-top: none;
+              padding-left: 0;
+              width: 100%;
+              margin-top: 1em;
+              position: absolute;
+              text-align: center;
+            }
+            &.btn-td {
+              padding-left: 0;
+              padding-right: 0;
+              position: relative;
+              cursor: pointer;
+            }
+            &.hide-on-desktop {
+              display: none;
+            }
+            &.hide-on-mobile {
+              @include md {
+                display: none;
+              }
+            }
+            .table-cell-container {
+              display: flex;
+
+              .text-truncate.has-tooltip-icon {
+                max-width: calc(80% - 1rem);
+              }
+              .row-tooltip {
+                display: inline-block;
+                max-width: 10%;
+
+                svg {
+                  height: 1rem;
+                }
+              }
+              a {
+                text-decoration: underline;
+                color: $black;
+              }
+            }
+          }
         }
+      }
     }
 </style>
 
 <style lang="scss">
   @import './../scss/right-panel.scss';
-
-  .slider-menu {
-    .loading-overlay {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background: #afafaf9c;
-      top: 0;
-      left: 0;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-
-      &.show {
-        display: flex;
-      }
-      .lds-roller {
-        display: inline-block;
-        position: relative;
-        width: 80px;
-        height: 80px;
-        z-index: 10000;
-      }
-      .lds-roller div {
-        animation: lds-roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-        transform-origin: 40px 40px;
-      }
-      .lds-roller div:after {
-        content: " ";
-        display: block;
-        position: absolute;
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: #fff;
-        margin: -4px 0 0 -4px;
-      }
-      .lds-roller div:nth-child(1) {
-        animation-delay: -0.036s;
-      }
-      .lds-roller div:nth-child(1):after {
-        top: 63px;
-        left: 63px;
-      }
-      .lds-roller div:nth-child(2) {
-        animation-delay: -0.072s;
-      }
-      .lds-roller div:nth-child(2):after {
-        top: 68px;
-        left: 56px;
-      }
-      .lds-roller div:nth-child(3) {
-        animation-delay: -0.108s;
-      }
-      .lds-roller div:nth-child(3):after {
-        top: 71px;
-        left: 48px;
-      }
-      .lds-roller div:nth-child(4) {
-        animation-delay: -0.144s;
-      }
-      .lds-roller div:nth-child(4):after {
-        top: 72px;
-        left: 40px;
-      }
-      .lds-roller div:nth-child(5) {
-        animation-delay: -0.18s;
-      }
-      .lds-roller div:nth-child(5):after {
-        top: 71px;
-        left: 32px;
-      }
-      .lds-roller div:nth-child(6) {
-        animation-delay: -0.216s;
-      }
-      .lds-roller div:nth-child(6):after {
-        top: 68px;
-        left: 24px;
-      }
-      .lds-roller div:nth-child(7) {
-        animation-delay: -0.252s;
-      }
-      .lds-roller div:nth-child(7):after {
-        top: 63px;
-        left: 17px;
-      }
-      .lds-roller div:nth-child(8) {
-        animation-delay: -0.288s;
-      }
-      .lds-roller div:nth-child(8):after {
-        top: 56px;
-        left: 12px;
-      }
-      @keyframes lds-roller {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }    
-    }
-  }
 </style>

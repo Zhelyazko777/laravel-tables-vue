@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PhoneValue.vue Test Should not render correct tooltip if passed and showTooltipOnHover is false 1`] = `<a href="tel:null" title="" data-toggle=""><span class="prefix"></span> <span class="value"></span> <span class="suffix"></span></a>`;
+
+exports[`PhoneValue.vue Test Should render correct tooltip if passed and showTooltipOnHover is true 1`] = `<a href="tel:null" title="Some tooltip" data-toggle="tooltip"><span class="prefix"></span> <span class="value"></span> <span class="suffix"></span></a>`;
+
+exports[`PhoneValue.vue Test Should render corrrect tel: 1`] = `<a href="tel:+359887878966" title="" data-toggle=""><span class="prefix"></span> <span class="value">+359887878966</span> <span class="suffix"></span></a>`;
+
+exports[`PhoneValue.vue Test Should render corrrect value and empty suffix and preffix 1`] = `<a href="tel:test value" title="" data-toggle=""><span class="prefix"></span> <span class="value">test value</span> <span class="suffix"></span></a>`;
+
+exports[`PhoneValue.vue Test Should render corrrect value and prefix if passed and no suffix 1`] = `<a href="tel:test value" title="" data-toggle=""><span class="prefix">prefix</span> <span class="value">test value</span> <span class="suffix"></span></a>`;
+
+exports[`PhoneValue.vue Test Should render corrrect value, suffix and prefix if passed 1`] = `<a href="tel:test value" title="" data-toggle=""><span class="prefix">prefix</span> <span class="value">test value</span> <span class="suffix">suffix</span></a>`;
