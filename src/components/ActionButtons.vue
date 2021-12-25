@@ -25,7 +25,7 @@
             v-if="button.type === 'text'"
             v-on="buildTableButtonSubscriptions(button.subscriptions)"
             v-bind="button.attrs"
-            :key="button.name"
+            :key="button.text"
             :class="checkIsButtonDisabled(button) ? 'disabled' : ''"
             class="dd-item">
               {{ button.text }}
@@ -35,7 +35,7 @@
             v-if="button.type === 'link'"
             v-on="buildTableButtonSubscriptions(button.subscriptions)"
             v-bind="button.attrs"
-            :key="button.name"
+            :key="button.text"
             :class="checkIsButtonDisabled(button) ? 'disabled' : ''"
             :href="button.route | replaceLinkId(row)"
             class="dd-item">
@@ -46,7 +46,7 @@
               v-else-if="button.type === 'modal'"
               v-on="buildTableButtonSubscriptions(button.subscriptions)"
               v-bind="button.attrs"
-              :key="button.name"
+              :key="button.text"
               :class="checkIsButtonDisabled(button) ? 'disabled' : ''"
               :data-target="`#${generateModalId(row.id, button.modalId)}`"
               data-toggle="modal"
@@ -63,6 +63,8 @@
 <script>
 import ModalMixin from '../mixins/modal.mixin';
 import ExpandableSliderMixin from './../mixins/expandable-slider.mixin.js';
+import ConditionsMixin from './../mixins/conditions.mixin.js';
+import LinkMixin from './../mixins/link.mixin.js';
 
 export default {
   props: {
@@ -95,7 +97,7 @@ export default {
       type: Number,
     }
   },
-  mixins: [ ModalMixin, ExpandableSliderMixin ],
+  mixins: [ ModalMixin, ExpandableSliderMixin, ConditionsMixin, LinkMixin ],
   methods: {
     onExpandBtnClick () {
       this.$emit('expand');
@@ -120,7 +122,7 @@ export default {
     },
     checkIsButtonDisabled (button) {
         return Object.keys(button.disableConditions).length > 0 && 
-          this.executeRawDataConditions(this.rowIndex, button.disableConditions);
+          this.executeRawDataConditions(this.row, button.disableConditions);
     },
   }
 }

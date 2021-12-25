@@ -1,24 +1,24 @@
 <template>
   <slider ref="slider" :title="title">
-    <div v-for="(column) in columns" class="slider-row" :key="column.name">
+    <div v-for="column in shownColumns" class="slider-row" :key="column.name">
       <p class="title">{{column.uiName}}</p>
       <div class="row-body">
         <phone-value
-          v-if="column.isPhone && row[column.name] && checkIfValueClickable(index, column)"
+          v-if="column.isPhone && row[column.name] && checkIfValueClickable(row, column)"
           :value="row[column.name]"
           :prefix="column.prefix"
           :suffix="column.suffix"
           :tooltip="column.tooltip"
-          :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon"
+          :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(row, column) && !column.showTooltipIcon"
         />
         <link-value
-          v-else-if="column.route && row[column.name] && checkIfValueClickable(index, column)"
+          v-else-if="column.route && row[column.name] && checkIfValueClickable(row, column)"
           :value="row[column.name]"
           :route="column.route | replaceLinkId(row)"
           :prefix="column.prefix"
           :suffix="column.suffix"
           :tooltip="column.tooltip"
-          :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon"
+          :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(row, column) && !column.showTooltipIcon"
         />
         <text-value
           v-else
@@ -26,10 +26,10 @@
           :prefix="column.prefix"
           :suffix="column.suffix"
           :tooltip="column.tooltip"
-          :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon"
+          :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(row, column) && !column.showTooltipIcon"
         />
         <div
-          v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)"
+          v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(row, column)"
           :title="column.tooltip"
           data-toggle="tooltip"
           class="ml-3 row-tooltip"
@@ -66,6 +66,11 @@ export default {
     },
   },
   mixins: [PresentableMixin],
+  computed: {
+      shownColumns () {
+        return this.columns.filter(c => !c.isHidden);
+      }
+  },
   methods: {
     open () {
       this.$refs.slider?.open();

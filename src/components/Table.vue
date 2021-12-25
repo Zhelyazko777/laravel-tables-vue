@@ -5,7 +5,7 @@
         <tr>
           <th class="padding"></th>
           <th
-            v-for="column in columns"
+            v-for="column in shownColumns"
             :key="column.name"
             :class="getColumnClass(column)"
             scope="col"
@@ -25,7 +25,7 @@
             <tr :key="row.id" :class="checkIfRowSpecifiedInQueryString(row.id) ? 'marked' : ''">
               <td></td>
               <td 
-                v-for="(column) in columns"
+                v-for="column in shownColumns"
                 :key="column.name"
                 :class="getColumnClass(column)"
                 class="align-middle"
@@ -33,24 +33,24 @@
                 <div class="table-cell-container">
                   <div 
                     class="text-truncate"
-                    :class="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column) ? 'has-tooltip-icon' : ''"
+                    :class="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(row, column) ? 'has-tooltip-icon' : ''"
                   >
                     <phone-value
-                      v-if="column.isPhone && row[column.name] && checkIfValueClickable(index, column)"
+                      v-if="column.isPhone && row[column.name] && checkIfValueClickable(row, column)"
                       :value="row[column.name]"
                       :prefix="column.prefix"
                       :suffix="column.suffix"
                       :tooltip="column.tooltip"
-                      :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon"
+                      :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(row, column) && !column.showTooltipIcon"
                     />
                     <link-value
-                      v-else-if="column.route && row[column.name] && checkIfValueClickable(index, column)"
+                      v-else-if="column.route && row[column.name] && checkIfValueClickable(row, column)"
                       :value="row[column.name]"
                       :route="column.route | replaceLinkId(row)"
                       :prefix="column.prefix"
                       :suffix="column.suffix"
                       :tooltip="column.tooltip"
-                      :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon"
+                      :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(row, column) && !column.showTooltipIcon"
                     />
                     <text-value
                       v-else
@@ -58,11 +58,11 @@
                       :prefix="column.prefix"
                       :suffix="column.suffix"
                       :tooltip="column.tooltip"
-                      :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(index, column) && !column.showTooltipIcon"
+                      :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(row, column) && !column.showTooltipIcon"
                     />
                   </div>
                   <div
-                    v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(index, column)"
+                    v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(row, column)"
                     :title="column.tooltip"
                     data-toggle="tooltip"
                     class="ml-3 row-tooltip"
@@ -96,7 +96,7 @@
               :columns="columns"
             />
             
-            <div v-for="button in actionButtons" :key="generateModalId(row.id, button.modalId)">
+            <div v-for="button in modalButtons" :key="generateModalId(row.id, button.modalId)">
               <confirmation-modal 
                 v-if="button.type === 'modal'" 
                 :id="generateModalId(row.id, button.modalId)"
@@ -124,7 +124,7 @@ import CsrfMixin from './../mixins/csrf.mixin.js';
 export default {
     data () {
       return {
-        translations: this.$laravelFormsConfig.componentTranslations,
+        translations: this.$laravelTablesConfig.componentTranslations,
       };
     },
     props: {
@@ -152,6 +152,14 @@ export default {
         type: String,
       }
     },
+    computed: {
+      modalButtons () {
+        return this.actionButtons.filter(ab => ab.type === 'modal');
+      },
+      shownColumns () {
+        return this.columns.filter(c => !c.isHidden);
+      }
+    },
     mixins: [
       CsrfMixin,
       ExpandableSliderMixin,
@@ -172,16 +180,6 @@ export default {
                 $(`#expand-menu-button-${rowId}`).click();
               })
             }
-        },
-        checkShouldShowTooltip (rowIndex, column) {
-            if (Object.keys(column.removeTooltipConditions).length === 0) {
-              return true;
-            }
-
-            return this.executeRawDataConditions(
-                    rowIndex,
-                    column.removeTooltipConditions
-                  );
         },
         getColumnClass (column) {
           let classes = [];
