@@ -6,7 +6,7 @@ import { initJqueryCode } from './jquery';
 // install function executed by Vue.use()
 const install = function installLaravelFormsVue(Vue, options) { 
   initJqueryCode();
-  Vue.prototype.$laravelFormsConfig = {
+  Vue.prototype.$laravelTablesConfig = {
     componentTranslations: options.componentTranslations,
   };
   Object.entries(components).forEach(([componentName, component]) => {
