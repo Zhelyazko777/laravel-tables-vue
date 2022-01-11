@@ -28,6 +28,7 @@
           :tooltip="column.tooltip"
           :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(row, column) && !column.showTooltipIcon"
         />
+        <span v-if="!row[column.name]" v-html="'&mdash;'" class="empty-value"></span>
         <div
           v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(row, column)"
           :title="column.tooltip"

@@ -60,6 +60,7 @@
                       :tooltip="column.tooltip"
                       :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(row, column) && !column.showTooltipIcon"
                     />
+                  <span v-if="!row[column.name]" v-html="'&mdash;'" class="empty-value"></span>
                   </div>
                   <div
                     v-if="column.tooltip && column.showTooltipIcon && checkShouldShowTooltip(row, column)"
