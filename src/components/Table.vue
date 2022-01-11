@@ -53,7 +53,7 @@
                       :showTooltipOnHover="column.tooltip && checkShouldShowTooltip(row, column) && !column.showTooltipIcon"
                     />
                     <text-value
-                      v-else
+                      v-else-if="row[column.name]"
                       :value="row[column.name]"
                       :prefix="column.prefix"
                       :suffix="column.suffix"
