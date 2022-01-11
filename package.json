@@ -9,7 +9,7 @@
     "type": "git",
     "url": "git+https://github.com/Zhelyazko777/laravel-table-vue.git"
   },
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Frontend represenation of the laravel-tables package",
   "main": "dist/laravel-tables-vue.ssr.js",
   "browser": "dist/laravel-tables-vue.esm.js",
