@@ -33,22 +33,5 @@ export default {
       type: Boolean|null,
     },
   },
-  computed: {
-    cellValue () {
-      let result = '-';
-
-      if (this.value) {
-        result = this.value;
-      }
-      if (this.prefix) {
-        result = this.prefix + result;
-      }
-      if (this.suffix) {
-        result = result + this.suffix;
-      }
-
-      return result;
-    }
-  }
 }
 </script>
